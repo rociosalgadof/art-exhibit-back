@@ -9,13 +9,7 @@ import org.springframework.stereotype.Repository;
  * on Role entities in the database.
  */
 @Repository
-public interface RoleRepository extends JpaRepository<Role, Long> {
-
-    /**
-     * Method to find a Role entity by its name field
-     *
-     * @param name The name of the Role entity to search for
-     * @return The found Role entity or null if not found
-     */
+public interface RoleRepository extends JpaRepository<Role,Long> {
     Role findByName(String name);
 }
+

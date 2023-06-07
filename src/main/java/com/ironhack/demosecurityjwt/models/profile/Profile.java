@@ -1,5 +1,6 @@
 package com.ironhack.demosecurityjwt.models.profile;
 
+import com.ironhack.demosecurityjwt.models.user.User;
 import jakarta.persistence.*;
 
 @Entity
@@ -16,12 +17,29 @@ public class Profile {
     @Embedded
     private Gallery gallery;
 
+    private String owner;
+
 
     public Profile() {
         this.home = new Home();
         this.contact = new Contact();
         this.about = new About();
         this.gallery = new Gallery();
+    }
+    public Profile(String owner) {
+        this.owner = owner;
+        this.home = new Home();
+        this.contact = new Contact();
+        this.about = new About();
+        this.gallery = new Gallery();
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public Long getId() {

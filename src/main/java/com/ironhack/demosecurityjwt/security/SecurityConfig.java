@@ -7,11 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,68 +34,53 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    // UserDetailsService is an interface provided by Spring Security that defines a way to retrieve user information
     @Autowired
     private UserDetailsService userDetailsService;
 
-    // Autowired instance of the AuthenticationManagerBuilder
-    @Autowired
-    private AuthenticationManagerBuilder authManagerBuilder;
 
-    /**
-     * Bean definition for PasswordEncoder
-     *
-     * @return an instance of the DelegatingPasswordEncoder
-     */
     @Bean
     public PasswordEncoder encoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        return new BCryptPasswordEncoder();
+    }
+    @Autowired
+    private AuthenticationConfiguration authenticationConfiguration;
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(encoder());
+
+        return authProvider;
     }
 
-    /**
-     * Bean definition for AuthenticationManager
-     *
-     * @param authenticationConfiguration the instance of AuthenticationConfiguration
-     * @return an instance of the AuthenticationManager
-     * @throws Exception if there is an issue getting the instance of the AuthenticationManager
-     */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfiguration) throws Exception {
+        return authConfiguration.getAuthenticationManager();
     }
-
-    /**
-     * Bean definition for SecurityFilterChain
-     *
-     * @param http the instance of HttpSecurity
-     * @return an instance of the SecurityFilterChain
-     * @throws Exception if there is an issue building the SecurityFilterChain
-     */
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // CustomAuthenticationFilter instance created
-        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authManagerBuilder.getOrBuild());
-        // set the URL that the filter should process
-        customAuthenticationFilter.setFilterProcessesUrl("/api/login");
-        // disable CSRF protection
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManager(authenticationConfiguration));
+        customAuthenticationFilter.setFilterProcessesUrl("/auth/login");
         http.csrf().disable();
-        // set the session creation policy to stateless
+        http.cors();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        // set up authorization for different request matchers and user roles
+        http.authorizeHttpRequests().requestMatchers("/auth/login/**").permitAll();
+        http.authorizeHttpRequests().requestMatchers("/auth/signup").permitAll();
         http.authorizeHttpRequests((requests) -> requests
-                .requestMatchers(GET, "/api/profile/{id}").anonymous()
-                .requestMatchers("/api/login/**").permitAll()
-                .requestMatchers(GET, "/api/users").permitAll()
-                .requestMatchers(PUT, "/api/profile/{id}/edit").permitAll()
-                .requestMatchers(DELETE, "/api/profile/{id}/about").permitAll()
-                .anyRequest().authenticated()
-        );
-        // add the custom authentication filter to the http security object
+                        .requestMatchers(GET, "/api/profile/{id}").anonymous());
+        http.authorizeHttpRequests().anyRequest().authenticated();
         http.addFilter(customAuthenticationFilter);
-        // Add the custom authorization filter before the standard authentication filter.
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
-
-        // Build the security filter chain to be returned.
+        http.authenticationProvider(authenticationProvider());
         return http.build();
     }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/js/**", "/images/**");
+    }
+
 }
+

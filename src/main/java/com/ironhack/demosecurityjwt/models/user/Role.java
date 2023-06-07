@@ -16,17 +16,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Role {
-    /**
-     * The primary key for the Role table
-     */
+
     @Id
-    /**
-     * The id is generated automatically by the database
-     */
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    /**
-     * The name of the role
-     */
     private String name;
 }
+
