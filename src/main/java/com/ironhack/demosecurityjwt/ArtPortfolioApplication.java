@@ -1,6 +1,8 @@
 package com.ironhack.demosecurityjwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.ironhack.demosecurityjwt.models.profile.Enquiry;
 import com.ironhack.demosecurityjwt.models.user.User;
 import com.ironhack.demosecurityjwt.repositories.profile.ProfileRepository;
 import com.ironhack.demosecurityjwt.services.impl.UserService;

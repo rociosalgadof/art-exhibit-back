@@ -70,6 +70,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests().requestMatchers("/auth/signup").permitAll();
         http.authorizeHttpRequests((requests) -> requests
                         .requestMatchers(GET, "/api/profile/{id}").anonymous());
+        http.authorizeHttpRequests((requests) -> requests
+                .requestMatchers(PUT, "/api/profile/{id}/edit").authenticated());
+        http.authorizeHttpRequests((requests) -> requests
+                .requestMatchers(POST, "/api/profile/{id}/enquiry").anonymous());
         http.authorizeHttpRequests().anyRequest().authenticated();
         http.addFilter(customAuthenticationFilter);
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
