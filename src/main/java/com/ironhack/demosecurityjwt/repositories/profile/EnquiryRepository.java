@@ -13,4 +13,5 @@ import java.util.List;
 public interface EnquiryRepository extends JpaRepository<Enquiry, Long> {
     @Query("SELECT e FROM Enquiry e JOIN e.profile p WHERE p.id = :profileId")
     List<Enquiry> findAllByProfileId(@Param("profileId") Long profileId);
+
 }

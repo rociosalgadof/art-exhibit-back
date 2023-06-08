@@ -46,7 +46,6 @@ public class ProfileControler {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void updateProfile(@PathVariable long id, @RequestBody Profile profile) throws Exception{
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(authentication);
         Optional<Profile> profileOptional = profileRepository.findById(id);
         if(profileOptional.isPresent()){
             profile.setId(profileOptional.get().getId());
@@ -72,7 +71,6 @@ public class ProfileControler {
     @ResponseStatus(HttpStatus.OK)
     public List<Enquiry> getAllEnquiries(@PathVariable(name="id") long profileId) throws Exception{
         Optional<Profile> profileOptional = profileRepository.findById(profileId);
-        System.out.println("inside get all enquiries route");
         if(profileOptional.isPresent()){
             System.out.println("inside get all enquiries route");
             return enquiryRepository.findAllByProfileId(profileId);
