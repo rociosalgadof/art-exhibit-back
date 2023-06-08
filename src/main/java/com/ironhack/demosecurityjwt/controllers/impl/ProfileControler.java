@@ -33,7 +33,7 @@ public class ProfileControler {
 
     @GetMapping("/profile/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Profile getProductById(@PathVariable(name="id") long profileId) throws Exception{
+    public Profile getProfileById(@PathVariable(name="id") long profileId) throws Exception{
         Optional<Profile> profileOptional = profileRepository.findById(profileId);
         if(profileOptional.isPresent()){
             return profileRepository.findById(profileId).get();
@@ -66,6 +66,32 @@ public class ProfileControler {
         } else{
         throw new NoSuchElementException("We couldn't find the element in the Database.");
     }
+    }
+
+    @GetMapping("/profile/{id}/enquiry")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Enquiry> getAllEnquiries(@PathVariable(name="id") long profileId) throws Exception{
+        Optional<Profile> profileOptional = profileRepository.findById(profileId);
+        System.out.println("inside get all enquiries route");
+        if(profileOptional.isPresent()){
+            System.out.println("inside get all enquiries route");
+            return enquiryRepository.findAllByProfileId(profileId);
+        }else{
+            throw new NoSuchElementException("We couldn't find the element in the Database.");
+        }
+    }
+
+    @DeleteMapping("/profile/{profileId}/enquiry/{enquiryId}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void deleteEnquiry(@PathVariable("profileId") Long profileId, @PathVariable("enquiryId") Long enquiryId) throws Exception{
+        Optional<Enquiry> optionalEnquiry = enquiryRepository.findById(enquiryId);
+        if(optionalEnquiry.isPresent()){
+            optionalEnquiry.get().setProfile(null);
+            enquiryRepository.save(optionalEnquiry.get());
+            enquiryRepository.deleteById(enquiryId);
+        }else{
+            throw new NoSuchElementException("We couldn't find the element in the Database.");
+        }
     }
 
 
